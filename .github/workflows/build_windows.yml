@@ -46,7 +46,7 @@ jobs:
           mkdir ./Release
           mkdir "./Release/${{matrix.name}}"
           cp "${{matrix.name}}.exe" "./Release/${{matrix.name}}/"
-          cp -R "./${{matrix.filesys}}" "./Release/${{matrix.filesys}}/"
+          cp -R "./${{matrix.filesys}}" "./Release/${{matrix.name}}/${{matrix.filesys}}/"
           cp ./README.md "./Release/${{matrix.name}}/"
           cp ./LICENSE "./Release/${{matrix.name}}/"
 
