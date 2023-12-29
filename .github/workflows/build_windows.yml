@@ -68,7 +68,6 @@ jobs:
           cp /${{matrix.sys}}/bin/libLerc*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/liblzma*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libogg*.dll "./Release/${{matrix.name}}/"
-          cp /${{matrix.sys}}/bin/libopus*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libpcre*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libpng*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libstdc*.dll "./Release/${{matrix.name}}/"
@@ -78,7 +77,6 @@ jobs:
           cp /${{matrix.sys}}/bin/zlib*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libSDL*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/SDL*.dll "./Release/${{matrix.name}}/"
-          cp /${{matrix.sys}}/bin/libsharpyuv*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libwinpthread*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libmikmod*.dll "./Release/${{matrix.name}}/"
 
