@@ -65,7 +65,6 @@ jobs:
           cp /${{matrix.sys}}/bin/libintl*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libjbig*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libjpeg*.dll "./Release/${{matrix.name}}/"
-          cp /${{matrix.sys}}/bin/libjxl*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/liblcms*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libLerc*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/liblzma*.dll "./Release/${{matrix.name}}/"
