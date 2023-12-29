@@ -511,7 +511,7 @@ Possible options are:\n\
 		    Buffer = SDL_CreateRGBSurface(SDL_HWSURFACE,WINDOW_WIDTH,WINDOW_HEIGHT,32,Screen->format->Rmask,Screen->format->Gmask,Screen->format->Bmask,Screen->format->Amask);
 			printf("Succesfully Set %dx%dx32\n",WINDOW_WIDTH,WINDOW_HEIGHT);
 			SDL_ShowCursor(SDL_DISABLE);
-			if (Mix_OpenAudio(11025,AUDIO_S16,MIX_DEFAULT_CHANNELS,64) < 0)
+			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
 			{
 				GlobalSoundEnabled = false;
 				printf("Failed to initialise sound!\n");
