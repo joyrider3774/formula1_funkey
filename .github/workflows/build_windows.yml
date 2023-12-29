@@ -79,6 +79,8 @@ jobs:
           cp /${{matrix.sys}}/bin/SDL*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libwinpthread*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libmikmod*.dll "./Release/${{matrix.name}}/"
+          cp /${{matrix.sys}}/bin/libmad*.dll "./Release/${{matrix.name}}/"
+          cp /${{matrix.sys}}/bin/libsharpyuv*.dll "./Release/${{matrix.name}}/"
 
       - name: Store build
         uses: actions/upload-artifact@v3
