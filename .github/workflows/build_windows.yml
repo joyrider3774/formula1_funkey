@@ -38,7 +38,7 @@ jobs:
       - name: Build Game
         shell: msys2 {0}
         run: |
-          make "PREFIX=${{matrix.sys}}"
+          make "PREFIX=/${{matrix.sys}}"
 
       - name: Copy Game And Assets
         shell: msys2 {0}
