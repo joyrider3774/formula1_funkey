@@ -25,7 +25,7 @@ bool PlayerStates[3];
 bool TvOutMode = false;
 int HitPosition, LivesLost;
 Mix_Chunk *TickSound, *CrashSound;
-long Score = 0;
+long Score = 0, HiScore = 0;
 SDL_Color FG = {0,0,0,0};
 SDL_Color BG = {172,172,172,0};
 
@@ -43,7 +43,69 @@ Uint32 WaitForFrame()
 	return Result;
 }
 
-void DrawScoreBar(bool Empty)
+void LoadSettings()
+{
+ 	FILE *SettingsFile;
+	char Filename[4096];
+
+	const char *File = ".com.github.joyrider377.formula1_funkey.dat";
+	char *EnvHome = getenv("HOME");
+	char *EnvHomeDrive = getenv("HOMEDRIVE");
+	char *EnvHomePath = getenv("HOMEPATH");
+
+	sprintf(Filename, "%s", File);
+	if (EnvHome) //linux systems normally
+		sprintf(Filename, "%s/%s", EnvHome, File);
+	else
+		if(EnvHomeDrive && EnvHomePath) //windows systems normally
+			sprintf(Filename, "%s%s/%s", EnvHomeDrive, EnvHomePath, File);
+
+ 	SettingsFile = fopen(Filename,"rb");
+ 	if(SettingsFile)
+ 	{
+		fread(&HiScore, sizeof(HiScore), 1, SettingsFile);
+		fclose(SettingsFile);
+	}
+
+}
+
+// Save the settings
+void SaveSettings()
+{
+ 	FILE *SettingsFile;
+ 	char Filename[4096];
+
+	const char *File = ".com.github.joyrider377.formula1_funkey.dat";
+	char *EnvHome = getenv("HOME");
+	char *EnvHomeDrive = getenv("HOMEDRIVE");
+	char *EnvHomePath = getenv("HOMEPATH");
+
+	sprintf(Filename, "%s", File);
+	if (EnvHome) //linux systems normally
+		sprintf(Filename, "%s/%s", EnvHome, File);
+	else
+		if(EnvHomeDrive && EnvHomePath) //windows systems normally
+			sprintf(Filename, "%s%s/%s", EnvHomeDrive, EnvHomePath, File);
+ 	
+	SettingsFile = fopen(Filename,"wb");
+	if(SettingsFile)
+ 	{
+		fwrite(&HiScore, sizeof(HiScore), 1, SettingsFile);
+		fflush(SettingsFile);
+		fclose(SettingsFile);
+ 	}
+}
+
+void setHiScore(long value)
+{
+	if(value > HiScore)
+	{
+    	HiScore = value;
+    	SaveSettings();
+	}
+}
+
+void DrawScoreBar(bool Empty, long ScoreIn, long HighScoreIn, int LivesLostIn)
 {
 	if(Empty)
 		return;
@@ -51,22 +113,33 @@ void DrawScoreBar(bool Empty)
 	char ScoreStr[20], Str[20];
 	SDL_Surface *Text;
 	SDL_Rect DstRect;
-	sprintf(ScoreStr,"%ld", Score);
+	sprintf(ScoreStr,"%ld", ScoreIn);
 	if (strlen(ScoreStr) > 0)
 	{
 		Text = TTF_RenderText_Shaded(font,ScoreStr,FG,BG);
-		DstRect.x = 190 - Text->w;
+		DstRect.x = 200 - Text->w;
 		DstRect.y = 30;
 		DstRect.w = Text->w;
 		DstRect.h = Text->h;
 		SDL_BlitSurface(Text,NULL,Buffer,&DstRect);
 		SDL_FreeSurface(Text);
 	}
-	if (LivesLost >=1)
+	sprintf(ScoreStr,"%ld", HighScoreIn);
+	if (strlen(ScoreStr) > 0)
 	{
-		for(int X = 0;X<LivesLost;X++)
+		Text = TTF_RenderText_Shaded(font,ScoreStr,FG,BG);
+		DstRect.x = 140 - Text->w;
+		DstRect.y = 30;
+		DstRect.w = Text->w;
+		DstRect.h = Text->h;
+		SDL_BlitSurface(Text,NULL,Buffer,&DstRect);
+		SDL_FreeSurface(Text);
+	}
+	if (LivesLostIn >=1)
+	{
+		for(int X = 0;X<LivesLostIn;X++)
 			Str[X] = 'X';
-		Str[LivesLost] = '\0';
+		Str[LivesLostIn] = '\0';
 		Text =TTF_RenderText_Shaded(font,Str,FG,BG);
 		DstRect.x = 50;
 		DstRect.y = 30;
@@ -201,10 +274,12 @@ void Game()
 					case SDLK_ESCAPE:			
 						GameState= GSQuit;
 						break;
+					case SDLK_l:
 					case SDLK_LEFT:
 						if(CanMove)
 							MoveLeft();
 						break;
+					case SDLK_r:
 					case SDLK_RIGHT:
 						if(CanMove)
 							MoveRight();
@@ -225,7 +300,8 @@ void Game()
 					if (EnemyStates[X][2])
 					{
 						Score += 10;
-						if ((Score % 100 ==0) & (Delay > 18))
+						setHiScore(Score);
+						if ((Score % 100 ==0) && (Delay > 18))
 							Delay--;
 					}
 				MoveEnemy();
@@ -263,7 +339,7 @@ void Game()
 			}
 		}
 		DrawGame();
-		DrawScoreBar(false);
+		DrawScoreBar(false, Score, HiScore, LivesLost);
         SDL_FillRect(Screen,NULL,SDL_MapRGB(Screen->format,0,0,0));
         SDL_BlitSurface(Buffer,NULL,Screen,NULL);
 		SDL_Flip(Screen);
@@ -293,6 +369,10 @@ void GameOver()
                     case SDLK_RIGHT:
                     case SDLK_UP:
                     case SDLK_DOWN:
+					case SDLK_u:
+					case SDLK_l:
+					case SDLK_r:
+					case SDLK_d:
 					case SDLK_a:
 					case SDLK_b:
 					case SDLK_x:
@@ -306,7 +386,7 @@ void GameOver()
 		}
 		SDL_BlitSurface(Background,NULL,Buffer,NULL);
 		DrawGame();
-		DrawScoreBar(false);
+		DrawScoreBar(false, Score, HiScore, LivesLost);
         SDL_FillRect(Screen,NULL,SDL_MapRGB(Screen->format,0,0,0));
         SDL_BlitSurface(Buffer,NULL,Screen,NULL);
 		SDL_Flip(Screen);
@@ -330,7 +410,6 @@ void Intro()
 {
 	SDL_Event Event ;
 	int FlashesDelay;
-	LivesLost = 0;
 	FlashesDelay = 0;
 	while (GameState == GSIntro)
 	{
@@ -350,6 +429,10 @@ void Intro()
                     case SDLK_RIGHT:
                     case SDLK_UP:
                     case SDLK_DOWN:
+					case SDLK_u:
+					case SDLK_l:
+					case SDLK_r:
+					case SDLK_d:
 					case SDLK_a:
 					case SDLK_b:
 					case SDLK_x:
@@ -367,47 +450,15 @@ void Intro()
 		{
 			FlashesDelay = 0;
 			FlashIntro();
-			if (PlayerStates[0])
-			{
-				LivesLost = 3;
-				Score = 888888;
-			}
-			else
-			{
-				LivesLost = 0;
-				Score = 0;
-			}
 		}
 		DrawGame();
-		DrawScoreBar(!PlayerStates[0]);
+		DrawScoreBar(!PlayerStates[0], 888888, 888888, 3);
         SDL_FillRect(Screen,NULL,SDL_MapRGB(Screen->format,0,0,0));
         SDL_BlitSurface(Buffer,NULL,Screen,NULL);
 		SDL_Flip(Screen);
 		SDL_Delay(WaitForFrame());
 	}
 
-}
-
-void LoadSettings()
-{
- 	FILE *SettingsFile;
- 	SettingsFile = fopen("./settings.dat","r");
- 	if(SettingsFile)
- 	{		
-		fclose(SettingsFile);
- 	}
-}
-
-// Save the settings
-void SaveSettings()
-{
- 	FILE *SettingsFile;
- 	SettingsFile = fopen("./settings.dat","w");
- 	if(SettingsFile)
- 	{       
-		fclose(SettingsFile);
-		//sync();
- 	}
 }
 
 int main(int argc, char **argv)
