@@ -67,7 +67,6 @@ jobs:
           cp /${{matrix.sys}}/bin/libjpeg*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libLerc*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/liblzma*.dll "./Release/${{matrix.name}}/"
-          cp /${{matrix.sys}}/bin/libmpg123*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libogg*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libopus*.dll "./Release/${{matrix.name}}/"
           cp /${{matrix.sys}}/bin/libpcre*.dll "./Release/${{matrix.name}}/"
