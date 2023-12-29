@@ -7,7 +7,6 @@ env:
   GAME_NAME: Formula1
   GAME_SYS: funkey-s
   
-name: Build Mac Os
 jobs:
   build:
     runs-on: ubuntu-latest    
