@@ -29,8 +29,8 @@ jobs:
       
       - name: package opk
         env:
-          GAME_NAME:${{env.GAME_NAME}}
-          GAME_SYS:${{env.GAME_SYS}}
+          GAME_NAME: ${{env.GAME_NAME}}
+          GAME_SYS: ${{env.GAME_SYS}}
         run: |
           mkdir -p opk
           cp  main.elf opk/main.elf
