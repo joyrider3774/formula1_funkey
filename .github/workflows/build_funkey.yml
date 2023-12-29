@@ -6,7 +6,8 @@ on:
 env:
   GAME_NAME: Formula1
   GAME_SYS: funkey-s
-  
+
+name: Build funkey-s
 jobs:
   build:
     runs-on: ubuntu-latest    
