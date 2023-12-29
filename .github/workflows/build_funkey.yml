@@ -1,0 +1,47 @@
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually target the Actions tab
+  workflow_dispatch:
+
+env:
+  GAME_NAME: Formula1
+  GAME_SYS: funkey-s
+  
+name: Build Mac Os
+jobs:
+  build:
+    runs-on: ubuntu-latest    
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+          
+      - name: setup funkey SDK
+        run: |
+          wget https://github.com/DrUm78/FunKey-OS/releases/download/FunKey-OS-DrUm78/FunKey-sdk-2.3.0.tar.gz
+          tar -xzvf ./FunKey-sdk-2.3.0.tar.gz
+          cd FunKey-sdk-2.3.0
+          ./relocate-sdk.sh
+       
+      - name: Build Game
+        run: |
+          source FunKey-sdk-2.3.0/environment-setup
+          export TMPPREFIX=FunKey-sdk-2.3.0/arm-funkey-linux-musleabihf/sysroot/usr
+          make "CC=FunKey-sdk-2.3.0/usr/bin/arm-linux-g++" "PREFIX=$TMPPREFIX" "CFLAGS=-Wall -Wextra -I$TMPPREFIX/include -I$TMPPREFIX/include/SDL -march=armv7-a+neon-vfpv4 -mtune=cortex-a7 -mfpu=neon-vfpv4 -DFUNKEY=1"
+      
+      - name: package opk
+        env:
+          GAME_NAME:${{env.GAME_NAME}}
+          GAME_SYS:${{env.GAME_SYS}}
+        run: |
+          mkdir -p opk
+          cp  main.elf opk/main.elf
+          cp -r ./filesystem opk/filesystem
+          cp $GAME_NAME.$GAME_SYS.desktop opk/$GAME_NAME.$GAME_SYS.desktop
+
+          mksquashfs ./opk $GAME_NAME.opk -all-root -noappend -no-exports -no-xattrs
+               
+      - name: Store build
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{env.GAME_NAME}}_${{env.GAME_SYS}}
+          path: ${{env.GAME_NAME}}.opk
