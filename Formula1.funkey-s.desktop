@@ -1,8 +1,8 @@
 [Desktop Entry]
-Type=Application
 Name=Formula 1
-Comment=Little, fake, F1 Game & Watch game
-Exec=main.elf
-Icon=filesystem/icon
+Comment=Little fake F1 Game and Watch game
 Terminal=false
-Categories=games;
+Type=Application
+Exec=main.elf
+Icon=Formula1
+Categories=games
