@@ -4,5 +4,5 @@ Comment=Little fake F1 Game and Watch game
 Terminal=false
 Type=Application
 Exec=main.elf
-Icon=Formula1
+Icon=filesystem/icon
 Categories=games

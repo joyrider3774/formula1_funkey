@@ -5,7 +5,6 @@ make TARGET=funkey
 
 mkdir -p opk
 cp main.elf opk/main.elf
-cp ./filesystem/icon.png opk/Formula1.png
 cp -r ./filesystem opk/filesystem
 cp Formula1.funkey-s.desktop opk/Formula1.funkey-s.desktop
 
