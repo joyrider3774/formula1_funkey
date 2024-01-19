@@ -271,6 +271,7 @@ void Game()
 			{
 				switch(Event.key.keysym.sym)
 				{
+          case SDLK_q:
 					case SDLK_ESCAPE:			
 						GameState= GSQuit;
 						break;
@@ -362,6 +363,7 @@ void GameOver()
 			{
 				switch(Event.key.keysym.sym)
 				{
+          case SDLK_q:
 					case SDLK_ESCAPE:
 						GameState = GSQuit;
 						break;
@@ -422,13 +424,14 @@ void Intro()
 			{
 				switch(Event.key.keysym.sym)
 				{
+          case SDLK_q:
 					case SDLK_ESCAPE:
 						GameState = GSQuit;
 						break;
-                   	case SDLK_LEFT:
-                    case SDLK_RIGHT:
-                    case SDLK_UP:
-                    case SDLK_DOWN:
+          case SDLK_LEFT:
+          case SDLK_RIGHT:
+          case SDLK_UP:
+          case SDLK_DOWN:
 					case SDLK_u:
 					case SDLK_l:
 					case SDLK_r:
