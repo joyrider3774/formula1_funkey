@@ -6,30 +6,32 @@ SRC=$(wildcard *.cpp $(foreach fd, $(SRC_DIR), $(fd)/*.cpp))
 OBJS=$(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
 
 
-CC = g++
-PREFIX = /usr
-OPT_LEVEL = -O2 
-CFLAGS = -Wall -Wextra -I$(PREFIX)/include -I$(PREFIX)/include/SDL 
-LDFLAGS = -L$(PREFIX)/lib -lSDL -lSDL_image -lSDL_ttf -lSDL_mixer -lmikmod -lSDL_gfx -lm
+CXX ?= g++
+SDLCONFIG ?= sdl-config
+CXXFLAGS ?= -Os -Wall -Wextra
+LDFLAGS ?= -lSDL_image -lSDL_ttf -lSDL_mixer -lmikmod -lSDL_gfx -lm
 
 ifdef DEBUG
-CFLAGS += -g
+CXXFLAGS += -g
 endif
 
 ifdef TARGET
 include $(TARGET).mk
 endif
 
+CXXFLAGS += `$(SDLCONFIG) --cflags`
+LDFLAGS += `$(SDLCONFIG) --libs`
+
 .PHONY: all clean
 
 all: $(EXE)
 
 $(EXE): $(OBJS)
-	$(CC) $(CFLAGS) -o $(EXE) $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) $^ $(LDFLAGS) -o $@ 
 
 $(OBJ_DIR)/%.o: %.cpp
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJ_DIR):
 	mkdir -p $@
