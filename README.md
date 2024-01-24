@@ -1,4 +1,4 @@
-# formula 1
+# Formula 1 Game & Watch Funkey-s Version
 ![DownloadCountTotal](https://img.shields.io/github/downloads/joyrider3774/formula1_funkey/total?label=total%20downloads&style=plastic) ![DownloadCountLatest](https://img.shields.io/github/downloads/joyrider3774/formula1_funkey/latest/total?style=plastic) ![LatestVersion](https://img.shields.io/github/v/tag/joyrider3774/formula1_funkey?label=Latest%20version&style=plastic) ![License](https://img.shields.io/github/license/joyrider3774/formula1_funkey?style=plastic)
 
 ![screenshot 1](metadata/screenshot1.png)  ![screenshot 2](metadata/screenshot2.png)
