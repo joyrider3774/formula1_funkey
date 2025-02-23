@@ -18,5 +18,3 @@ Menu button quits the game
 
 - Created by me but based on style made from other images by TommyShots from funkey discord
 
-## Credits
-
