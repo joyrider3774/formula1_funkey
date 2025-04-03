@@ -1,6 +1,6 @@
 SRC_DIR = src
 OBJ_DIR = ./obj
-EXE=main.elf
+EXE=formula1
 
 SRC=$(wildcard *.cpp $(foreach fd, $(SRC_DIR), $(fd)/*.cpp)) 
 OBJS=$(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
@@ -9,7 +9,7 @@ OBJS=$(addprefix $(OBJ_DIR)/, $(SRC:.cpp=.o))
 CXX ?= g++
 SDLCONFIG ?= sdl-config
 CXXFLAGS ?= -Os -Wall -Wextra
-LDFLAGS ?= -lSDL_image -lSDL_ttf -lSDL_mixer -lmikmod -lSDL_gfx -lm
+LDFLAGS ?= -lSDL_image -lSDL_ttf -lSDL_mixer -lSDL_gfx -lm
 
 ifdef DEBUG
 CXXFLAGS += -g

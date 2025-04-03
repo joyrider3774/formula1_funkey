@@ -7,15 +7,58 @@
 #include "SDL_ttf.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
+#include "SDL_gfxPrimitives.h"
+#include "SDL_rotozoom.h"
 
 
-const int WINDOW_WIDTH = 240;
-const int WINDOW_HEIGHT = 240;
+#if defined(FUNKEY)
+
+#define BUT_UP SDLK_u
+#define BUT_RIGHT SDLK_r
+#define BUT_DOWN SDLK_d
+#define BUT_LEFT SDLK_l
+#define BUT_A SDLK_a
+#define BUT_X SDLK_x
+#define BUT_Y SDLK_y
+#define BUT_B SDLK_b
+#define BUT_QUIT SDLK_q
+
+#elif defined(MIYOO)
+
+#define BUT_UP SDLK_UP
+#define BUT_RIGHT SDLK_RIGHT
+#define BUT_DOWN SDLK_DOWN
+#define BUT_LEFT SDLK_LEFT
+#define BUT_A SDLK_SPACE
+#define BUT_X SDLK_LSHIFT
+#define BUT_Y SDLK_LALT
+#define BUT_B SDLK_LCTRL
+#define BUT_QUIT SDLK_ESCAPE
+
+#else
+
+#define BUT_UP SDLK_UP
+#define BUT_RIGHT SDLK_RIGHT
+#define BUT_DOWN SDLK_DOWN
+#define BUT_LEFT SDLK_LEFT
+#define BUT_A SDLK_SPACE
+#define BUT_X SDLK_x
+#define BUT_Y SDLK_y
+#define BUT_B SDLK_LCTRL
+#define BUT_QUIT SDLK_ESCAPE
+
+
+#endif
+
+const int ORIG_WINDOW_WIDTH = 240;
+const int ORIG_WINDOW_HEIGHT = 240;
+int WINDOW_WIDTH = ORIG_WINDOW_WIDTH;
+int WINDOW_HEIGHT = ORIG_WINDOW_HEIGHT;
 
 enum GameStates {GSQuit,GSIntro,GSGame,GSGameOver};
 
 const int FPS = 30;
-SDL_Surface *Screen,*Background,*Player,*Enemy,*Tmp,*Buffer;
+SDL_Surface *Screen,*Background,*Player,*Enemy,*Buffer;
 TTF_Font* font;
 bool GlobalSoundEnabled = true;
 GameStates GameState = GSIntro;
@@ -28,6 +71,37 @@ Mix_Chunk *TickSound, *CrashSound;
 long Score = 0, HiScore = 0;
 SDL_Color FG = {0,0,0,0};
 SDL_Color BG = {172,172,172,0};
+Uint32 FrameTicks = 0;
+Uint32 FrameCount = 0;
+Uint32 LastFps = 0;
+bool ShowFps = false;
+bool noDelay = false;
+
+void HandleFPS()
+{
+	if(!ShowFps)
+		return;
+	FrameCount++;
+	char Text[100];
+	sprintf(Text, "FPS:%d", LastFps);
+    SDL_Color Col = {0, 0, 0, 255};
+	SDL_Surface *Tmp = TTF_RenderText_Solid(font, Text, Col);
+	boxRGBA(Screen,0,0,Tmp->w + 6, Tmp->h + 6,255,255,255,255);
+	SDL_Rect Dst;
+	Dst.x = 3;
+	Dst.y = 3;
+	Dst.w = Tmp->w;
+	Dst.h = Tmp->h;
+	SDL_BlitSurface(Tmp, NULL, Screen, &Dst);
+	SDL_FreeSurface(Tmp);
+	if(SDL_GetTicks() - FrameTicks >= 1000)
+	{
+		LastFps = FrameCount;
+		FrameCount = 0;
+		FrameTicks = SDL_GetTicks();
+	}
+}
+
 
 Uint32 WaitForFrame()
 {
@@ -271,17 +345,14 @@ void Game()
 			{
 				switch(Event.key.keysym.sym)
 				{
-          case SDLK_q:
-					case SDLK_ESCAPE:			
+          			case BUT_QUIT:
 						GameState= GSQuit;
 						break;
-					case SDLK_l:
-					case SDLK_LEFT:
+					case BUT_LEFT:
 						if(CanMove)
 							MoveLeft();
 						break;
-					case SDLK_r:
-					case SDLK_RIGHT:
+					case BUT_RIGHT:
 						if(CanMove)
 							MoveRight();
 						break;
@@ -342,9 +413,28 @@ void Game()
 		DrawGame();
 		DrawScoreBar(false, Score, HiScore, LivesLost);
         SDL_FillRect(Screen,NULL,SDL_MapRGB(Screen->format,0,0,0));
-        SDL_BlitSurface(Buffer,NULL,Screen,NULL);
+        if ((WINDOW_WIDTH != ORIG_WINDOW_WIDTH) || (WINDOW_HEIGHT != ORIG_WINDOW_HEIGHT))
+		{
+			double wscale = (double)WINDOW_WIDTH / ORIG_WINDOW_WIDTH;
+			if(ORIG_WINDOW_HEIGHT * wscale > WINDOW_HEIGHT)
+				wscale = (double)WINDOW_HEIGHT / ORIG_WINDOW_HEIGHT;
+			SDL_Rect dst;
+			dst.x = (WINDOW_WIDTH - (ORIG_WINDOW_WIDTH * wscale)) / 2;
+			dst.y = (WINDOW_HEIGHT - (ORIG_WINDOW_HEIGHT * wscale)) / 2,
+			dst.w = ORIG_WINDOW_WIDTH * wscale;
+			dst.h = ORIG_WINDOW_HEIGHT * wscale;
+			SDL_Surface *ScreenBufferZoom = zoomSurface(Buffer,wscale,wscale,0);
+			SDL_BlitSurface(ScreenBufferZoom,NULL,Screen,&dst);
+			SDL_FreeSurface(ScreenBufferZoom);
+		}
+		else
+		{
+			SDL_BlitSurface(Buffer, NULL, Screen, NULL);
+		}
+		HandleFPS();
 		SDL_Flip(Screen);
-		SDL_Delay(WaitForFrame());
+		if(!noDelay)
+			SDL_Delay(WaitForFrame());
 	}
 
 }
@@ -363,22 +453,17 @@ void GameOver()
 			{
 				switch(Event.key.keysym.sym)
 				{
-          case SDLK_q:
-					case SDLK_ESCAPE:
+          			case BUT_QUIT:
 						GameState = GSQuit;
 						break;
-                    case SDLK_LEFT:
-                    case SDLK_RIGHT:
-                    case SDLK_UP:
-                    case SDLK_DOWN:
-					case SDLK_u:
-					case SDLK_l:
-					case SDLK_r:
-					case SDLK_d:
-					case SDLK_a:
-					case SDLK_b:
-					case SDLK_x:
-					case SDLK_y:
+                    case BUT_LEFT:
+                    case BUT_RIGHT:
+                    case BUT_UP:
+                    case BUT_DOWN:
+					case BUT_A:
+					case BUT_B:
+					case BUT_X:
+					case BUT_Y:
 						GameState = GSGame;
 						break;
 					default:
@@ -390,9 +475,28 @@ void GameOver()
 		DrawGame();
 		DrawScoreBar(false, Score, HiScore, LivesLost);
         SDL_FillRect(Screen,NULL,SDL_MapRGB(Screen->format,0,0,0));
-        SDL_BlitSurface(Buffer,NULL,Screen,NULL);
+        if ((WINDOW_WIDTH != ORIG_WINDOW_WIDTH) || (WINDOW_HEIGHT != ORIG_WINDOW_HEIGHT))
+		{
+			double wscale = (double)WINDOW_WIDTH / ORIG_WINDOW_WIDTH;
+			if(ORIG_WINDOW_HEIGHT * wscale > WINDOW_HEIGHT)
+				wscale = (double)WINDOW_HEIGHT / ORIG_WINDOW_HEIGHT;
+			SDL_Rect dst;
+			dst.x = (WINDOW_WIDTH - (ORIG_WINDOW_WIDTH * wscale)) / 2;
+			dst.y = (WINDOW_HEIGHT - (ORIG_WINDOW_HEIGHT * wscale)) / 2,
+			dst.w = ORIG_WINDOW_WIDTH * wscale;
+			dst.h = ORIG_WINDOW_HEIGHT * wscale;
+			SDL_Surface *ScreenBufferZoom = zoomSurface(Buffer,wscale,wscale,0);
+			SDL_BlitSurface(ScreenBufferZoom,NULL,Screen,&dst);
+			SDL_FreeSurface(ScreenBufferZoom);
+		}
+		else
+		{
+			SDL_BlitSurface(Buffer, NULL, Screen, NULL);
+		}
+		HandleFPS();
 		SDL_Flip(Screen);
-		SDL_Delay(WaitForFrame());
+		if(!noDelay)
+			SDL_Delay(WaitForFrame());
 	}
 
 }
@@ -424,22 +528,17 @@ void Intro()
 			{
 				switch(Event.key.keysym.sym)
 				{
-          case SDLK_q:
-					case SDLK_ESCAPE:
+					case BUT_QUIT:
 						GameState = GSQuit;
 						break;
-          case SDLK_LEFT:
-          case SDLK_RIGHT:
-          case SDLK_UP:
-          case SDLK_DOWN:
-					case SDLK_u:
-					case SDLK_l:
-					case SDLK_r:
-					case SDLK_d:
-					case SDLK_a:
-					case SDLK_b:
-					case SDLK_x:
-					case SDLK_y:
+					case BUT_LEFT:
+					case BUT_RIGHT:
+					case BUT_UP:
+					case BUT_DOWN:
+					case BUT_A:
+					case BUT_B:
+					case BUT_X:
+					case BUT_Y:
 						GameState = GSGame;
 						break;
 					default:
@@ -457,9 +556,29 @@ void Intro()
 		DrawGame();
 		DrawScoreBar(!PlayerStates[0], 888888, 888888, 3);
         SDL_FillRect(Screen,NULL,SDL_MapRGB(Screen->format,0,0,0));
-        SDL_BlitSurface(Buffer,NULL,Screen,NULL);
+        if ((WINDOW_WIDTH != ORIG_WINDOW_WIDTH) || (WINDOW_HEIGHT != ORIG_WINDOW_HEIGHT))
+		{
+			double wscale = (double)WINDOW_WIDTH / ORIG_WINDOW_WIDTH;
+			if(ORIG_WINDOW_HEIGHT * wscale > WINDOW_HEIGHT)
+				wscale = (double)WINDOW_HEIGHT / ORIG_WINDOW_HEIGHT;
+			SDL_Rect dst;
+			dst.x = (WINDOW_WIDTH - (ORIG_WINDOW_WIDTH * wscale)) / 2;
+			dst.y = (WINDOW_HEIGHT - (ORIG_WINDOW_HEIGHT * wscale)) / 2,
+			dst.w = ORIG_WINDOW_WIDTH * wscale;
+			dst.h = ORIG_WINDOW_HEIGHT * wscale;
+			SDL_Surface *ScreenBufferZoom = zoomSurface(Buffer,wscale,wscale,0);
+			SDL_BlitSurface(ScreenBufferZoom,NULL,Screen,&dst);
+			SDL_FreeSurface(ScreenBufferZoom);
+		}
+		else
+		{
+			SDL_BlitSurface(Buffer, NULL, Screen, NULL);
+		}
+		HandleFPS();
+		
 		SDL_Flip(Screen);
-		SDL_Delay(WaitForFrame());
+		if(!noDelay)
+			SDL_Delay(WaitForFrame());
 	}
 
 }
@@ -468,28 +587,52 @@ int main(int argc, char **argv)
 {
 	bool useSoftwareRenderer = true;
     bool useFullScreenAtStartup = false;
-    int c;
-	while ((c = getopt(argc, argv, "?lafvo")) != -1) 
-    {
-        switch (c) 
-        {
-            case '?':
-                // i use sdl log because on windows printf did not show up
-                printf("Usage: formula [Options]\n\n\
-Possible options are:\n\
-  -?: show this help message\n\
-  -a: Use Acclerated Renderer\n\
-  -f: Run fullscreen at startup (by default starts up windowed)\n");
-                exit(0);
-                break;
-            case 'a':
-                useSoftwareRenderer = false;
-                break;
-            case 'f':
-                useFullScreenAtStartup = true;
-                break;
-        }
-    }
+	for (int i=0; i < argc; i++)
+	{
+		if(strcasecmp(argv[i], "-?") == 0)
+		{
+			printf("Usage: formula [Options]\n\n");
+			printf("  Possible options are:\n");
+			printf("    -?: show this help message\n");
+			printf("    -a: Use Acclerated Renderer\n");
+			printf("    -f: Run fullscreen at startup (by default starts up windowed)\n");
+			printf("    -fps: Show FPS\n"); 
+			printf("    -nd: No frame delay (run as fast as possible)\n");
+			printf("    -s[x]: x = 1-5 scale window by this factor\n");
+			exit(0);
+		}
+		if(strcasecmp(argv[i], "-a") == 0)
+			useSoftwareRenderer = false;
+		if(strcasecmp(argv[i], "-nd") == 0)
+			noDelay = true;
+		if(strcasecmp(argv[i], "-fps") == 0)
+			ShowFps = true;
+		if(strcasecmp(argv[i], "-f") == 0)
+			useFullScreenAtStartup = true;
+		if(strcasecmp(argv[i], "-s2") == 0)
+		{
+			WINDOW_WIDTH = ORIG_WINDOW_WIDTH * 2;
+			WINDOW_HEIGHT = ORIG_WINDOW_HEIGHT * 2;
+		}
+
+		if(strcasecmp(argv[i], "-s3") == 0)
+		{
+			WINDOW_WIDTH = ORIG_WINDOW_WIDTH * 3;
+			WINDOW_HEIGHT = ORIG_WINDOW_HEIGHT * 3;
+		}
+
+		if(strcasecmp(argv[i], "-s4") == 0)
+		{
+			WINDOW_WIDTH = ORIG_WINDOW_WIDTH * 4;
+			WINDOW_HEIGHT = ORIG_WINDOW_HEIGHT * 4;
+		}
+
+		if(strcasecmp(argv[i], "-s5") == 0)
+		{
+			WINDOW_WIDTH = ORIG_WINDOW_WIDTH * 5;
+			WINDOW_HEIGHT = ORIG_WINDOW_HEIGHT * 5;
+		}
+	}
 
 #ifdef FUNKEY		
 	useSoftwareRenderer = false;
@@ -501,17 +644,24 @@ Possible options are:\n\
 	{
 		printf("SDL Succesfully initialized\n");
 		Uint32 Flags = 0;
-        if (useFullScreenAtStartup) {
-            Flags |= SDL_FULLSCREEN;            
+        if (useFullScreenAtStartup) 
+		{
+			WINDOW_WIDTH = 0;
+			WINDOW_HEIGHT = 0;
+            Flags |= SDL_FULLSCREEN;
         }
 		if (useSoftwareRenderer) 
 			Flags |= SDL_SWSURFACE;
 		else
 			Flags |= SDL_HWSURFACE;
-		Screen = SDL_SetVideoMode( WINDOW_WIDTH, WINDOW_HEIGHT,32, Flags );
+		Screen = SDL_SetVideoMode( WINDOW_WIDTH, WINDOW_HEIGHT,0, Flags );
 		if(Screen)
 		{
-		    Buffer = SDL_CreateRGBSurface(SDL_HWSURFACE,WINDOW_WIDTH,WINDOW_HEIGHT,32,Screen->format->Rmask,Screen->format->Gmask,Screen->format->Bmask,Screen->format->Amask);
+			WINDOW_WIDTH = Screen->w;
+			WINDOW_HEIGHT = Screen->h;
+		    SDL_Surface * Tmp = SDL_CreateRGBSurface(SDL_SWSURFACE, ORIG_WINDOW_WIDTH, ORIG_WINDOW_HEIGHT,0,Screen->format->Rmask,Screen->format->Gmask,Screen->format->Bmask,Screen->format->Amask);
+			Buffer = SDL_DisplayFormat(Tmp);
+			SDL_FreeSurface(Tmp);
 			printf("Succesfully Set %dx%dx32\n",WINDOW_WIDTH,WINDOW_HEIGHT);
 			SDL_ShowCursor(SDL_DISABLE);
 			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
