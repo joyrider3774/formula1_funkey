@@ -632,6 +632,14 @@ int main(int argc, char **argv)
 			WINDOW_WIDTH = ORIG_WINDOW_WIDTH * 5;
 			WINDOW_HEIGHT = ORIG_WINDOW_HEIGHT * 5;
 		}
+
+		if(strcasecmp(argv[i], "-w") == 0)
+			if(i+1 < argc)
+				WINDOW_WIDTH = atoi(argv[i+1]);
+		
+		if(strcasecmp(argv[i], "-h") == 0)
+			if(i+1 < argc)
+				WINDOW_HEIGHT = atoi(argv[i+1]);
 	}
 
 #ifdef FUNKEY		
